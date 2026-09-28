@@ -526,7 +526,11 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
   }
   const commandNotes = (() => {
     const notes: string[] = ["Prompt is passed to Gemini via --prompt for non-interactive execution."];
-    notes.push("Added --approval-mode yolo for unattended execution.");
+    if (command === "agy") {
+      notes.push("Added --dangerously-skip-permissions for unattended execution.");
+    } else {
+      notes.push("Added --approval-mode yolo for unattended execution.");
+    }
     notes.push("Set headless terminal/browser env so Gemini fails fast instead of opening interactive auth or color prompts.");
     if (executionTargetIsRemote) {
       notes.push("Set GEMINI_CLI_TRUST_WORKSPACE=true for remote headless execution.");
@@ -599,7 +603,11 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
     const args = ["--output-format", "stream-json"];
     if (resumeSessionId) args.push("--resume", resumeSessionId);
     if (model && model !== DEFAULT_GEMINI_LOCAL_MODEL) args.push("--model", model);
-    args.push("--approval-mode", "yolo");
+    if (command === "agy") {
+      args.push("--dangerously-skip-permissions");
+    } else {
+      args.push("--approval-mode", "yolo");
+    }
     if (sandbox) {
       args.push("--sandbox");
     } else {

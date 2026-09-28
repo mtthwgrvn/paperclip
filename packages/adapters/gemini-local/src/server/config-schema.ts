@@ -17,7 +17,7 @@ export function getConfigSchema(): AdapterConfigSchema {
         default: "auto",
         options: [
           { value: "auto", label: "Default (ACP)" },
-          { value: "cli", label: "Gemini CLI" },
+          { value: "cli", label: "Gemini / Antigravity CLI" },
           { value: "acp", label: "ACP" },
         ],
         hint: "Default uses ACP. If ACP is unavailable, the run fails with a setup error. Choose CLI explicitly to use it.",
