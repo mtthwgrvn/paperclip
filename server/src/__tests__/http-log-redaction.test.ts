@@ -428,6 +428,39 @@ describe("HTTP logger redaction", () => {
     expect(log.res.statusCode).toBe(status);
   });
 
+  it.each([200, 403, 500])("redacts cloud credentials and assertions from HTTP %i logs", async (status) => {
+    const headers = {
+      "X-Paperclip-Cloud-Tenant-Token": "cloud-tenant-token-canary",
+      "X-Paperclip-Cloud-Session-Id": "cloud-session-id-canary",
+      "X-Paperclip-Cloud-Runtime-Identity": "cloud-runtime-identity-canary",
+      "X-Paperclip-Cloud-Control": "cloud-control-canary",
+    };
+    const chunks: string[] = [];
+    const stream = new Writable({
+      write(chunk, _encoding, callback) {
+        chunks.push(chunk.toString());
+        callback();
+      },
+    });
+    const app = express();
+    app.use(createHttpLogger(pino({ redact: [...HTTP_LOG_REDACT_PATHS] }, stream)));
+    app.get("/api/companies", (_req, res) => {
+      res.status(status).json({ status });
+    });
+
+    await request(app).get("/api/companies").set(headers).expect(status);
+
+    const output = chunks.join("");
+    const log = JSON.parse(output.trim());
+    for (const [header, secret] of Object.entries(headers)) {
+      expect(output).not.toContain(secret);
+      expect(log.req.headers[header.toLowerCase()]).toBe("[Redacted]");
+    }
+    expect(log.req.method).toBe("GET");
+    expect(log.req.url).toBe("/api/companies");
+    expect(log.res.statusCode).toBe(status);
+  });
+
   it("drops OAuth callback query data from the message and structured request", async () => {
     const chunks: string[] = [];
     const stream = new Writable({
