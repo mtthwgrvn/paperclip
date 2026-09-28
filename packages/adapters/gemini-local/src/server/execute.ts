@@ -241,6 +241,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
   const command = asString(config.command, "gemini");
   const model = asString(config.model, DEFAULT_GEMINI_LOCAL_MODEL).trim();
   const sandbox = asBoolean(config.sandbox, false);
+  const agyDangerouslySkipPermissions = asBoolean(config.agyDangerouslySkipPermissions, false);
 
   const workspaceContext = parseObject(context.paperclipWorkspace);
   const workspaceCwd = asString(workspaceContext.cwd, "");
@@ -527,7 +528,9 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
   const commandNotes = (() => {
     const notes: string[] = ["Prompt is passed to Gemini via --prompt for non-interactive execution."];
     if (command === "agy") {
-      notes.push("Added --dangerously-skip-permissions for unattended execution.");
+      if (agyDangerouslySkipPermissions) {
+        notes.push("Added --dangerously-skip-permissions for unattended execution.");
+      }
     } else {
       notes.push("Added --approval-mode yolo for unattended execution.");
     }
@@ -604,7 +607,9 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
     if (resumeSessionId) args.push("--resume", resumeSessionId);
     if (model && model !== DEFAULT_GEMINI_LOCAL_MODEL) args.push("--model", model);
     if (command === "agy") {
-      args.push("--dangerously-skip-permissions");
+      if (agyDangerouslySkipPermissions) {
+        args.push("--dangerously-skip-permissions");
+      }
     } else {
       args.push("--approval-mode", "yolo");
     }

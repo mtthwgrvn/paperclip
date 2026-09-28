@@ -97,10 +97,26 @@ describe("agy command execution", () => {
     vi.clearAllMocks();
   });
 
-  it("injects --dangerously-skip-permissions instead of --approval-mode yolo when command is agy", async () => {
+  it("does not inject --dangerously-skip-permissions by default when command is agy", async () => {
     const cwd = await mkdtemp(path.join(tmpdir(), "agy-test-"));
     try {
       const ctx = buildContext({ engine: "cli", command: "agy", cwd });
+      await execute(ctx as never);
+
+      expect(runAdapterExecutionTargetProcess).toHaveBeenCalledTimes(1);
+      const args = vi.mocked(runAdapterExecutionTargetProcess).mock.calls[0][3];
+      expect(args).not.toContain("--dangerously-skip-permissions");
+      expect(args).not.toContain("--approval-mode");
+      expect(args).not.toContain("yolo");
+    } finally {
+      await rm(cwd, { recursive: true, force: true });
+    }
+  });
+
+  it("injects --dangerously-skip-permissions when command is agy and agyDangerouslySkipPermissions is true", async () => {
+    const cwd = await mkdtemp(path.join(tmpdir(), "agy-test-"));
+    try {
+      const ctx = buildContext({ engine: "cli", command: "agy", agyDangerouslySkipPermissions: true, cwd });
       await execute(ctx as never);
 
       expect(runAdapterExecutionTargetProcess).toHaveBeenCalledTimes(1);

@@ -23,6 +23,13 @@ export function getConfigSchema(): AdapterConfigSchema {
         hint: "Default uses ACP. If ACP is unavailable, the run fails with a setup error. Choose CLI explicitly to use it.",
       },
       {
+        key: "agyDangerouslySkipPermissions",
+        label: "Antigravity CLI: Dangerously skip permissions",
+        type: "boolean",
+        default: false,
+        hint: "WARNING: Only enable this if you fully trust the environment and inputs. This unconditionally bypasses the Antigravity CLI's permission checks.",
+      },
+      {
         key: "agentCommand",
         label: "ACP server command",
         type: "text",
